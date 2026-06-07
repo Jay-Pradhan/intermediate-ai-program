@@ -163,3 +163,11 @@ def process_calendar_request(user_input=str) -> EventConfirmation:
         )
         return None
     logger.info("Gate Checked PASSED. Moving onto the calender request")
+
+    event_details = parse_event_details(basic_details_extraction.description)
+
+    confirmation = generate_confirmation_msg(event_details)
+
+    logger.info("Calendar Request Processed SUCCESSFULLY!")
+
+    return confirmation
