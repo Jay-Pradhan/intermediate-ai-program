@@ -42,9 +42,7 @@ class EventConfirmation(BaseModel):
     confirmation_msg: str = Field(
         description="Natural language for a confirmation message"
     )
-    calender_link: Optional[str] = Field(
-        description="Generate calender link if applicable"
-    )
+    calender_link: Optional[str] = Field(default=None)
 
 
 def extract_event_info(user_input: str) -> EventDetails:
@@ -116,4 +114,33 @@ def parse_event_details(description=str) -> EventDetails:
     )
 
     logger.debug(f"Participants: {', '.join(result.participants)}")
+    return result
+
+
+def generate_confirmation_msg(eventDetails=EventDetails) -> EventConfirmation:
+    logger.info("Generating the confirmation message....")
+
+    system_prompt = """Generate a natural confirmation message of the event." \
+
+                       Respond only in JSON in this structure:
+                            {
+                            "confirmation_msg": natural language for a confirmation message
+                            "calendar_link": null
+                            } 
+                    """
+
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": str(eventDetails.model_dump())},
+        ],
+        response_format={"type": "json_object"},
+    )
+
+    raw_json = response.choices[0].message.content
+    result = EventConfirmation.model_validate_json(raw_json)
+
+    logger.info("Confirmation message was successfully generated!")
+
     return result
