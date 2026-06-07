@@ -178,7 +178,7 @@ def process_calendar_request(user_input: str) -> EventConfirmation:
             f"Gate Check FAILED. is_event = {basic_details_extraction.is_event}, confidence_score= {basic_details_extraction.confidence_score}"
         )
         return None
-    logger.info("Gate Checked PASSED. Moving onto the calender request")
+    logger.info("Gate Check PASSED. Moving onto the calender request")
 
     event_details = parse_event_details(user_input)
 
@@ -189,7 +189,7 @@ def process_calendar_request(user_input: str) -> EventConfirmation:
     return confirmation
 
 
-user_input = "Let's schedule a birthday party for Joseph Stalin on his birthday inviting Hitler and Churchill as the guest for the whole day!"
+user_input = "Let's schedule a celebration party for Donald Trump and Benjamin Netanyahu next Sunday from 6PM to 11PM"
 result = process_calendar_request(user_input)
 
 if result:
