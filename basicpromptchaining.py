@@ -48,7 +48,7 @@ class EventConfirmation(BaseModel):
 
 
 def extract_event_info(user_input: str) -> EventDetails:
-    logger.info("Initialising Event Analysis")
+    logger.info("Initialising Event Analysis.....")
     logger.debug(f"Input: {user_input}")
 
     today = datetime.now()
@@ -57,11 +57,9 @@ def extract_event_info(user_input: str) -> EventDetails:
     system_prompt1 = f"""{date_context} Analyse if the text contains a calender event
                          Respond ONLY in JSON with this exact structure:
                             {{
+                                "description": "description of the event"
                                 "is_event": true or false,
-                                "title": "event title",
-                                "date_time": "ISO 8601 datetime",
-                                "duration_minutes": 60,
-                                "description": "optional description"
+                                "confidence_score":  "A confidence score of an event between 0 and 1"
                             }}
                         """
 
@@ -77,7 +75,45 @@ def extract_event_info(user_input: str) -> EventDetails:
     result = EventExtraction.model_validate_json(raw_json)
 
     logger.info(
-        f"Extraction Completed! Is an event - {result.is_event}, Confidence Score - {result.confidence_score}"
+        f"Extraction Completed! Is an event - {result.is_event}, Confidence Score - {result.confidence_score:.2f}"
     )
 
+    return result
+
+
+def parse_event_details(description=str) -> EventDetails:
+
+    logger.info("Initialising parsing of event details.....")
+
+    today = datetime.now()
+    date_context = f"Today is {today.strftime('%A, %B %d, %YY')}."
+
+    system_prompt = f"""{date_context} Extract the detailed event information.
+
+                         When user enters dates like 'Next Tuesday' or something like that then take reference from this current date
+                         
+                         Respond ONLY in JSON with this exact structure:
+                            {{
+                                "name": "name of the event",
+                                "date": "ISO 8601 datetime",
+                                "duration_minutes": 60,
+                                "participants": ["name1", "name2"]
+                            }}
+                     """
+    response_2 = client.chat.completions.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": description},
+        ],
+        response_format={"type": "json_object"},
+    )
+    raw_json = response_2.choices[0].message.content
+    result = EventDetails.model_validate_json(raw_json)
+
+    logger.info(
+        f"Parsed Event Details: Name-> {result.name}, Date-> {result.date}, Duration-> {result.duration}"
+    )
+
+    logger.debug(f"Participants: {', '.join(result.participants)}")
     return result
