@@ -92,7 +92,7 @@ def parse_event_details(description: str) -> EventDetails:
                         -When user enters dates like 'Next Tuesday' or something like that then take reference from this current date
                         -Stick to what user has said don't relate things to somewhere else.
                         -Current date is {today.strftime("%Y-%m-%d")}. All events must be in the future.
-                        -In case of any birthdays or anniverseries which has already passed. Schedule it for the next year on the same date
+                        -In case an event has been already completed, then schedule it for the next year. But if the event is going to come this year then don't schedule for the next year
                         -Strictly use the time mentioned by the user. DO NOT CHANGE OR ASSUME THE TIME
                         -The datetime must follow the Indian Standard Time(IST)
 
@@ -184,11 +184,11 @@ def process_calendar_request(user_input: str) -> EventConfirmation:
     return confirmation
 
 
-user_input = "Let's schedule a birthday party for Adolf Hitler on his birthday inviting Stalin and Churchill as the guest for the whole day!"
+user_input = "Let's schedule a birthday party for Joseph Stalin on his birthday inviting Hitler and Churchill as the guest for the whole day!"
 result = process_calendar_request(user_input)
 
 if result:
-    print(f"Confirmation Message: {result.confirmation_msg}")
+    print(f"\nConfirmation Message: {result.confirmation_msg}")
 
 else:
     print("Calendar Request FAILED!\n")
