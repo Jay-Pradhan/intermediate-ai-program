@@ -171,3 +171,14 @@ def process_calendar_request(user_input=str) -> EventConfirmation:
     logger.info("Calendar Request Processed SUCCESSFULLY!")
 
     return confirmation
+
+
+user_input = "Let's schedule a 2h secret meeting next Tuesday at 9pm with Hitler and Stalin to discuss about WWII."
+result = process_calendar_request(user_input)
+
+if result:
+    print(f"Confirmation Message: {result.confirmation_msg}")
+
+else:
+    print("Calendar Request FAILED!\n")
+    print("Please issue a proper calendar request")
