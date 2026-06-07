@@ -30,7 +30,7 @@ class EventExtraction(BaseModel):
 
 
 class EventDetails(BaseModel):
-    name: str = Field(description="Name of the event")
+    name: str = Field(description="Name of the event by checking the description")
     participants: list[str] = Field(description="List of participants")
     duration: int = Field(description="Expected duration of the event in minutes")
     date: str = Field(
@@ -69,7 +69,7 @@ def extract_event_info(user_input: str) -> EventExtraction:
         ],
         response_format={"type": "json_object"},
     )
-    raw_json = response.choices[0].messages.content
+    raw_json = response.choices[0].message.content
     result = EventExtraction.model_validate_json(raw_json)
 
     logger.info(
@@ -79,22 +79,33 @@ def extract_event_info(user_input: str) -> EventExtraction:
     return result
 
 
-def parse_event_details(description=str) -> EventDetails:
+def parse_event_details(description: str) -> EventDetails:
 
     logger.info("Initialising parsing of event details.....")
 
     today = datetime.now()
-    date_context = f"Today is {today.strftime('%A, %B %d, %YY')}."
+    date_context = f"Today is {today.strftime('%A, %B %d, %Y')}."
 
     system_prompt = f"""{date_context} Extract the detailed event information.
+                        NOTE:
 
-                         When user enters dates like 'Next Tuesday' or something like that then take reference from this current date
-                         
+                        -When user enters dates like 'Next Tuesday' or something like that then take reference from this current date
+                        -Stick to what user has said don't relate things to somewhere else.
+                        -Current date is {today.strftime("%Y-%m-%d")}. All events must be in the future.
+                        -In case of any birthdays or anniverseries which has already passed. Schedule it for the next year on the same date
+                        -Strictly use the time mentioned by the user. DO NOT CHANGE OR ASSUME THE TIME
+                        -The datetime must follow the Indian Standard Time(IST)
+
+                            Time format examples:
+                            - '9pm' -> '2026-06-10T21:00:00+05:30'
+                            - '3pm' -> '2026-06-10T15:00:00+05:30'
+                            - '10am'-> '2026-06-10T10:00:00+05:30'
+
                          Respond ONLY in JSON with this exact structure:
                             {{
                                 "name": "name of the event",
-                                "date": "ISO 8601 datetime",
-                                "duration_minutes": 60,
+                                "date": "YYYY-MM-DDTHH:MM:SS+05:30",
+                                "duration": 60,
                                 "participants": ["name1", "name2"]
                             }}
                      """
@@ -146,7 +157,7 @@ def generate_confirmation_msg(eventDetails=EventDetails) -> EventConfirmation:
     return result
 
 
-def process_calendar_request(user_input=str) -> EventConfirmation:
+def process_calendar_request(user_input: str) -> EventConfirmation:
 
     logger.info("Processing a Calendar Request....")
     logger.debug(f"Raw Input: {user_input}")
@@ -164,7 +175,7 @@ def process_calendar_request(user_input=str) -> EventConfirmation:
         return None
     logger.info("Gate Checked PASSED. Moving onto the calender request")
 
-    event_details = parse_event_details(basic_details_extraction.description)
+    event_details = parse_event_details(user_input)
 
     confirmation = generate_confirmation_msg(event_details)
 
@@ -173,7 +184,7 @@ def process_calendar_request(user_input=str) -> EventConfirmation:
     return confirmation
 
 
-user_input = "Let's schedule a 2h secret meeting next Tuesday at 9pm with Hitler and Stalin to discuss about WWII."
+user_input = "Let's schedule a birthday party for Adolf Hitler on his birthday inviting Stalin and Churchill as the guest for the whole day!"
 result = process_calendar_request(user_input)
 
 if result:
