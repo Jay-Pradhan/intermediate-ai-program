@@ -98,7 +98,7 @@ def parse_event_details(description=str) -> EventDetails:
                                 "participants": ["name1", "name2"]
                             }}
                      """
-    response_2 = client.chat.completions.create(
+    response = client.chat.completions.create(
         model=model,
         messages=[
             {"role": "system", "content": system_prompt},
@@ -106,7 +106,7 @@ def parse_event_details(description=str) -> EventDetails:
         ],
         response_format={"type": "json_object"},
     )
-    raw_json = response_2.choices[0].message.content
+    raw_json = response.choices[0].message.content
     result = EventDetails.model_validate_json(raw_json)
 
     logger.info(
