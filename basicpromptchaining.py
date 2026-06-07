@@ -45,7 +45,7 @@ class EventConfirmation(BaseModel):
     calender_link: Optional[str] = Field(default=None)
 
 
-def extract_event_info(user_input: str) -> EventDetails:
+def extract_event_info(user_input: str) -> EventExtraction:
     logger.info("Initialising Event Analysis.....")
     logger.debug(f"Input: {user_input}")
 
