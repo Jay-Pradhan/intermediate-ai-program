@@ -144,3 +144,22 @@ def generate_confirmation_msg(eventDetails=EventDetails) -> EventConfirmation:
     logger.info("Confirmation message was successfully generated!")
 
     return result
+
+
+def process_calendar_request(user_input=str) -> EventConfirmation:
+
+    logger.info("Processing a Calendar Request....")
+    logger.debug(f"Raw Input: {user_input}")
+
+    basic_details_extraction = extract_event_info(user_input)
+
+    # GATE CHECK
+    if (
+        not basic_details_extraction.is_event
+        or basic_details_extraction.confidence_score < 0.6
+    ):
+        logger.warning(
+            f"Gate Check FAILED. is_event = {basic_details_extraction.is_event}, confidence_score= {basic_details_extraction.confidence_score}"
+        )
+        return None
+    logger.info("Gate Checked PASSED. Moving onto the calender request")
