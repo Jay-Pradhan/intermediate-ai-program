@@ -1,3 +1,5 @@
+# WE ARE LEARNING PROMPT CHAINING
+
 import os
 from dotenv import load_dotenv
 
