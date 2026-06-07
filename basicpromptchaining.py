@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Optional
 import logging
-import json
+
 
 load_dotenv()
 
