@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Optional
 import logging
+import time
 
 
 load_dotenv()
@@ -47,6 +48,7 @@ class EventConfirmation(BaseModel):
 
 def extract_event_info(user_input: str) -> EventExtraction:
     logger.info("Initialising Event Analysis.....")
+    time.sleep(1)
     logger.debug(f"Input: {user_input}")
 
     today = datetime.now()
@@ -82,6 +84,7 @@ def extract_event_info(user_input: str) -> EventExtraction:
 def parse_event_details(description: str) -> EventDetails:
 
     logger.info("Initialising parsing of event details.....")
+    time.sleep(1)
 
     today = datetime.now()
     date_context = f"Today is {today.strftime('%A, %B %d, %Y')}."
@@ -130,6 +133,7 @@ def parse_event_details(description: str) -> EventDetails:
 
 def generate_confirmation_msg(eventDetails=EventDetails) -> EventConfirmation:
     logger.info("Generating the confirmation message....")
+    time.sleep(1)
 
     system_prompt = """Generate a natural confirmation message of the event." \
 
@@ -160,6 +164,7 @@ def generate_confirmation_msg(eventDetails=EventDetails) -> EventConfirmation:
 def process_calendar_request(user_input: str) -> EventConfirmation:
 
     logger.info("Processing a Calendar Request....")
+    time.sleep(1)
     logger.debug(f"Raw Input: {user_input}")
 
     basic_details_extraction = extract_event_info(user_input)
