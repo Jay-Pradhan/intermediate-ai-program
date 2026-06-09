@@ -26,3 +26,14 @@ class CalendarRequestType(BaseModel):
         description="A confidence score for the event between 0 & 1"
     )
     description: str = Field(description="A clean description of the event")
+
+
+class NewCalendarRequest(BaseModel):
+    name: str = Field(
+        description="Name of the event by taking reference from the description"
+    )
+    date: str = Field(
+        description="Date and Time of the event taking place. Use ISO 8601 to format it"
+    )
+    duration: int = Field(description="Duration of the event in minutes")
+    participants: list[str] = Field(description="List of the participants")
