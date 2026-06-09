@@ -16,3 +16,13 @@ logging.basicConfig(
 )
 
 logging.getLogger(__name__)
+
+
+class CalendarRequestType(BaseModel):
+    request_type: Literal["new_request", "modified_request", "other"] = Field(
+        description="Type of the calendar request"
+    )
+    confidence_score: float = Field(
+        description="A confidence score for the event between 0 & 1"
+    )
+    description: str = Field(description="A clean description of the event")
