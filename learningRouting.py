@@ -37,3 +37,8 @@ class NewCalendarRequest(BaseModel):
     )
     duration: int = Field(description="Duration of the event in minutes")
     participants: list[str] = Field(description="List of the participants")
+
+
+class ChangeOfRequest(BaseModel):
+    field: str = Field(description="Field to be changed")
+    new_value: str = Field(description="New value for the field")
