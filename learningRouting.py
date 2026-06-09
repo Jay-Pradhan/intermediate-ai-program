@@ -35,7 +35,7 @@ class NewCalendarRequest(BaseModel):
     date: str = Field(
         description="Date and Time of the event taking place. Use ISO 8601 to format it"
     )
-    duration: int = Field(description="Duration of the event in minutes")
+    duration: Optional[int] = Field(description="Duration of the event in minutes")
     participants: list[str] = Field(description="List of the participants")
 
 
@@ -49,3 +49,10 @@ class ModifyCalendarRequest(BaseModel):
     change: list[ChangeOfRequest] = Field(description="List of the changes made")
     new_partcipants: list[str] = Field(description="New participants to be added")
     old_participants: list[str] = Field(description="Old participants to be removed")
+
+
+class CalendarResponse(BaseModel):
+    success: bool = Field(description="Check whether the operation was successful")
+    message: str = Field(
+        description="An user-friendly response for event confirmation or modification"
+    )
