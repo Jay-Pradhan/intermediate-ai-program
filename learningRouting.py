@@ -42,3 +42,10 @@ class NewCalendarRequest(BaseModel):
 class ChangeOfRequest(BaseModel):
     field: str = Field(description="Field to be changed")
     new_value: str = Field(description="New value for the field")
+
+
+class ModifyCalendarRequest(BaseModel):
+    identifier: str = Field(description="Description to identify the existing event")
+    change: list[ChangeOfRequest] = Field(description="List of the changes made")
+    new_partcipants: list[str] = Field(description="New participants to be added")
+    old_participants: list[str] = Field(description="Old participants to be removed")
