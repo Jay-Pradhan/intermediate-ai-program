@@ -6,6 +6,8 @@ from groq import Groq
 from typing import Optional, Literal
 import logging
 
+load_dotenv()
+
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 model = "llama-3.3-70b-versatile"
 
