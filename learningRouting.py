@@ -58,3 +58,35 @@ class CalendarResponse(BaseModel):
     message: str = Field(
         description="An user-friendly response for event confirmation or modification"
     )
+
+
+def route_calender_event(user_input: str) -> CalendarRequestType:
+    logging.info("Routing the Calender Request")
+
+    system_prompt = """
+                    Determine whether the calender request made by the user is a new request or modify an existing one.
+
+                    Respond only in this JSON format:
+                    {
+                    "request_type": "the type of the calendar",
+                    "confidence_score": "a confidence score of the event between 0 and 1",
+                    "description": "a clean description of the event" 
+                    } 
+                    """
+
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_input},
+        ],
+        response_format={"type": "json_object"},
+    )
+    raw_json = response.choices[0].message.content
+    result = CalendarRequestType.model_validate_json(raw_json)
+
+    logging.info(
+        f"Request routed as {result.request_type} with a confidence score of {result.confidence_score}"
+    )
+
+    return result
