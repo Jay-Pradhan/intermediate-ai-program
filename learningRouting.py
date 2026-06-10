@@ -37,7 +37,7 @@ class NewCalendarRequest(BaseModel):
     date: str = Field(
         description="Date and Time of the event taking place. Use ISO 8601 to format it"
     )
-    duration: Optional[int] = Field(description="Duration of the event in minutes")
+    duration: int = Field(description="Duration of the event in minutes")
     participants: list[str] = Field(description="List of the participants")
 
 
