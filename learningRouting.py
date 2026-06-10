@@ -180,3 +180,12 @@ def process_calendar_request(user_input: str) -> Optional[CalendarResponse]:
     else:
         logging.warning("REQUEST TYPE NOT SUPPORTED")
         return None
+
+
+user_input = "Schedule a team meeting on 4th of July at 10AM with Hitler and Osama Bin Laden for 1 hour"
+result = process_calendar_request(user_input)
+
+if result:
+    print(f"Confirmation Message: {result.message}")
+else:
+    print("Please type in a valid calendar request!")
