@@ -159,3 +159,24 @@ def modify_calendar_request(description: str) -> CalendarResponse:
         success=True,
         message=f"Modified event: {result.identifier} with requested changes",
     )
+
+
+def process_calendar_request(user_input: str) -> Optional[CalendarResponse]:
+    logging.info("Processing a calendar request....")
+
+    request_route = route_calender_event(user_input)
+
+    if request_route.confidence_score < 0.6:
+        logging.warning(
+            f"CONFIDENCE SCORE OF THE EVENT IS LOW! {request_route.confidence_score}<0.6"
+        )
+        return None
+
+    # ROUTING
+    if request_route.request_type == "new_request":
+        return new_calendar_request(request_route.description)
+    elif request_route.request_type == "modified_request":
+        return modify_calendar_request(request_route.description)
+    else:
+        logging.warning("REQUEST TYPE NOT SUPPORTED")
+        return None
