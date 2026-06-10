@@ -61,7 +61,7 @@ class CalendarResponse(BaseModel):
 
 
 def route_calender_event(user_input: str) -> CalendarRequestType:
-    logging.info("Routing the Calender Request")
+    logging.info("Routing the Calender Request....")
 
     system_prompt = """
                     Determine whether the calender request made by the user is a new request or modify an existing one.
@@ -90,3 +90,37 @@ def route_calender_event(user_input: str) -> CalendarRequestType:
     )
 
     return result
+
+
+def new_calendar_request(description: str) -> CalendarResponse:
+    logging.info("Issuing a new Calendar Request....")
+
+    system_prompt = """
+                    Extract the details for creating a new calendar request
+
+                    Respond only in this JSON format:
+                    {
+                    "name": "name of the event by taking reference from the description",
+                    "date": "date of the event being taken place",
+                    "duration": "duration of the event in minutes",
+                    "participants": "list of the partcipants of the event"
+                    }
+                    """
+
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": description},
+        ],
+        response_format={"type": "json_object"},
+    )
+    raw_json = response.choices[0].message.content
+    result = NewCalendarRequest.model_validate_json(raw_json)
+
+    logging.info(f"New Event Processed! event details: {result.model_dump_json()}")
+
+    return CalendarResponse(
+        success=True,
+        message=f"A new event regarding {result.name} has been scheduled on {result.date} for {result.duration} mins with {result.participants}",
+    )
