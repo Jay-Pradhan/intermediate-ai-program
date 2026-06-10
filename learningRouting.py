@@ -124,3 +124,38 @@ def new_calendar_request(description: str) -> CalendarResponse:
         success=True,
         message=f"A new event regarding {result.name} has been scheduled on {result.date} for {result.duration} mins with {result.participants}",
     )
+
+
+def modify_calendar_request(description: str) -> CalendarResponse:
+    logging.info("Modifying an existing calendar request....")
+
+    system_prompt = """
+                    Extract the details for modifying an existing calendar request
+
+                    Respond only in this JSON format:
+                    {
+                    "identifier": "description to identify the existing event",
+                    "change": "list of changes made",
+                    "old_participants": "participants to be removed",
+                    "new_participants": "participants to be added"
+                    }
+                    """
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": description},
+        ],
+        response_format={"type": "json_object"},
+    )
+    raw_json = response.choices[0].message.content
+    result = ModifyCalendarRequest.model_validate_json(raw_json)
+
+    logging.info(
+        f"Modification Successful: Modified {result.model_dump_json()} as per the required changes"
+    )
+
+    return CalendarResponse(
+        success=True,
+        message=f"Modified event: {result.identifier} with requested changes",
+    )
