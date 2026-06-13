@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 from groq import Groq
 from typing import Optional, Literal
 import logging
+from datetime import date
 
 load_dotenv()
 
@@ -21,7 +22,7 @@ logging.getLogger(__name__)
 
 
 class CalendarRequestType(BaseModel):
-    request_type: Literal["new_request", "modified_request", "other"] = Field(
+    request_type: Literal["new_request", "modification_request", "other"] = Field(
         description="Type of the calendar request"
     )
     confidence_score: float = Field(
@@ -49,7 +50,7 @@ class ChangeOfRequest(BaseModel):
 class ModifyCalendarRequest(BaseModel):
     identifier: str = Field(description="Description to identify the existing event")
     change: list[ChangeOfRequest] = Field(description="List of the changes made")
-    new_partcipants: list[str] = Field(description="New participants to be added")
+    new_participants: list[str] = Field(description="New participants to be added")
     old_participants: list[str] = Field(description="Old participants to be removed")
 
 
@@ -64,14 +65,18 @@ def route_calender_event(user_input: str) -> CalendarRequestType:
     logging.info("Routing the Calender Request....")
 
     system_prompt = """
-                    Determine whether the calender request made by the user is a new request or modify an existing one.
+                    Determine whether the calender request made by the user is a new request or modification of an existing one.
 
                     Respond only in this JSON format:
                     {
-                    "request_type": "the type of the calendar",
+                    "request_type": "new_request, modification_request or other",
                     "confidence_score": "a confidence score of the event between 0 and 1",
                     "description": "a clean description of the event" 
-                    } 
+                    }
+
+                    request_type MUST be "new_request", "modification_request" or other
+                    Do not determine any value of your own
+
                     """
 
     response = client.chat.completions.create(
@@ -95,16 +100,25 @@ def route_calender_event(user_input: str) -> CalendarRequestType:
 def new_calendar_request(description: str) -> CalendarResponse:
     logging.info("Issuing a new Calendar Request....")
 
-    system_prompt = """
+    system_prompt = f"""
                     Extract the details for creating a new calendar request
-
+                    Today's date is {date.today()}.
                     Respond only in this JSON format:
-                    {
+                    {{
                     "name": "name of the event by taking reference from the description",
-                    "date": "date of the event being taken place",
-                    "duration": "duration of the event in minutes",
-                    "participants": "list of the partcipants of the event"
-                    }
+                    "date": "ISO 8601 formatted date and time e.g. 2025-07-04T10:00:00",
+                    "duration": 60,
+                    "participants": ["participant1", "participant2"]
+                    }}
+                    Rules:
+                    - Extract participant names EXACTLY as mentioned by the user, do not invent or substitute names
+                    - "participants" MUST be a list of strings (use [] if none mentioned)
+                    - "duration" MUST be an integer (minutes), not a string
+                    - CRITICAL: Copy participant names EXACTLY and ONLY from the user's message. 
+                                The participants in this request are ONLY the names the user explicitly mentioned.
+                                Do NOT add, remove, or substitute any names whatsoever.
+                    - Extract the event name EXACTLY as described by the user                                
+
                     """
 
     response = client.chat.completions.create(
@@ -122,7 +136,7 @@ def new_calendar_request(description: str) -> CalendarResponse:
 
     return CalendarResponse(
         success=True,
-        message=f"A new event regarding {result.name} has been scheduled on {result.date} for {result.duration} mins with {result.participants}",
+        message=f"A new event regarding {result.name} has been scheduled on {result.date} for {result.duration} mins with {', '.join(result.participants)}",
     )
 
 
@@ -135,9 +149,15 @@ def modify_calendar_request(description: str) -> CalendarResponse:
                     Respond only in this JSON format:
                     {
                     "identifier": "description to identify the existing event",
-                    "change": "list of changes made",
-                    "old_participants": "participants to be removed",
-                    "new_participants": "participants to be added"
+                    "change": [{"field": "date", "new_value": "2025-07-05T10:00:00"}],
+                    "old_participants":["name1", "name2"],
+                    "new_participants": ["name3"],
+
+                    Rules:
+                    - "change" MUST be a list of objects, each with "field" and "new_value" keys
+                    - "new_participants" MUST be a list of strings (use empty list [] if none)
+                    - "old_participants" MUST be a list of strings (use empty list [] if none)
+                    - Never use empty strings "" for list fields, always use []
                     }
                     """
     response = client.chat.completions.create(
@@ -154,10 +174,23 @@ def modify_calendar_request(description: str) -> CalendarResponse:
     logging.info(
         f"Modification Successful: Modified {result.model_dump_json()} as per the required changes"
     )
+    changes_summary = ", ".join([
+        f"{c.field} changed to {c.new_value}" for c in result.change
+    ])
 
     return CalendarResponse(
         success=True,
-        message=f"Modified event: {result.identifier} with requested changes",
+        message=f"Event '{result.identifier}' has been updated: {changes_summary}"
+        + (
+            f". Added: {', '.join(result.new_participants)}"
+            if result.new_participants
+            else ""
+        )
+        + (
+            f". Removed: {', '.join(result.old_participants)}"
+            if result.old_participants
+            else ""
+        ),
     )
 
 
@@ -174,18 +207,28 @@ def process_calendar_request(user_input: str) -> Optional[CalendarResponse]:
 
     # ROUTING
     if request_route.request_type == "new_request":
-        return new_calendar_request(request_route.description)
-    elif request_route.request_type == "modified_request":
-        return modify_calendar_request(request_route.description)
+        return new_calendar_request(user_input)
+    elif request_route.request_type == "modification_request":
+        return modify_calendar_request(user_input)
     else:
         logging.warning("REQUEST TYPE NOT SUPPORTED")
         return None
 
 
-user_input = "Schedule a team meeting on 4th of July at 10AM with Hitler and Osama Bin Laden for 1 hour"
+user_input = (
+    "Schedule a team meeting on 4th of July at 10AM with Steve and Stark for 1 hour"
+)
 result = process_calendar_request(user_input)
 
 if result:
     print(f"Confirmation Message: {result.message}")
 else:
     print("Please type in a valid calendar request!")
+
+test_input = "Reschedule the meeting to 5th of July with Golu and Molu"
+result = process_calendar_request(test_input)
+
+if result:
+    print(f"Confirmation Message: {result.message}")
+else:
+    print("Please type in a valid calendar request")
