@@ -30,3 +30,29 @@ class Validator(BaseModel):
 class SecurityVerifier(BaseModel):
     is_safe: bool = Field(description="Whether the request is safe or not")
     risk_flags: list[str] = Field(description="List of potential security conflicts")
+
+
+async def validate_request(user_input: str) -> Validator:
+    logging.info("Validating Calendar Request....")
+
+    system_prompt = """
+                    Determine whether the request made is a calendar event request or not.
+
+                    Respond only in this JSON format:
+                    {
+                    is_request: Whether this a calendar request or not,
+                    confidence_score: A confidence score for the request between 0 and 1
+                    }
+                    """
+    response = await client.chat.completions.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_input},
+        ],
+        response_format={"type": "json_object"},
+    )
+    raw_json = response.choices[0].message.content
+    result = Validator.model_validate_json(raw_json)
+
+    return result
