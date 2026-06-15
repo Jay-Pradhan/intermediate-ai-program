@@ -81,3 +81,29 @@ async def security_check(user_input: str) -> SecurityVerifier:
     result = SecurityVerifier.model_validate_json(raw_json)
 
     return result
+
+
+async def process_request(user_input: str) -> bool:
+    logging.info("Processing a Calendar Request....")
+
+    request_check, check_security = await asyncio.gather(
+        validate_request(user_input), security_check(user_input)
+    )
+
+    is_valid = (
+        request_check.is_request
+        and request_check.confidence_score > 0.7
+        and check_security.is_safe
+    )
+
+    if not is_valid:
+        logging.warning(
+            f"VALIDATION FAILED! Request: {request_check.is_request}, Security: {check_security.is_safe}, Confidence Score: {request_check.confidence_score}"
+        )
+
+        if check_security.risk_flags:
+            logging.critical(
+                f"SECURITY RISK FOUND! Security Flags: {check_security.risk_flags}"
+            )
+
+    return is_valid
