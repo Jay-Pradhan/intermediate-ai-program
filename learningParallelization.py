@@ -5,6 +5,7 @@ import asyncio
 from groq import AsyncGroq
 from pydantic import BaseModel, Field
 import logging
+from typing import Optional
 
 load_dotenv()
 
@@ -29,7 +30,9 @@ class Validator(BaseModel):
 
 class SecurityVerifier(BaseModel):
     is_safe: bool = Field(description="Whether the request is safe or not")
-    risk_flags: list[str] = Field(description="List of potential security conflicts")
+    risk_flags: Optional[list[str]] = Field(
+        description="List of potential security conflicts"
+    )
 
 
 async def validate_request(user_input: str) -> Validator:
@@ -40,9 +43,12 @@ async def validate_request(user_input: str) -> Validator:
 
                     Respond only in this JSON format:
                     {
-                    "is_request": "Whether this a calendar request or not",
-                    "confidence_score: "A confidence score for the request between 0 and 1"
+                    "is_request": bool,
+                    "confidence_score: 0.90"
                     }
+
+                    "is_request" must be a boolean (true or false).
+                    "confidence_score" must be a float between 0 and 1.
                     """
     response = await client.chat.completions.create(
         model=model,
@@ -65,9 +71,12 @@ async def security_check(user_input: str) -> SecurityVerifier:
 
                        Respond only in this JSON format:
                        {
-                       "is_safe": "Whether the request is safe or not",
-                       "risk_flags": "List of potential security conflicts"
+                       "is_safe": true,
+                       "risk_flags": []
                        } 
+
+                    "is_safe" must be a boolean (true or false).
+                    "risk_flags" must be a JSON array of strings. If there are no risks, return an empty array [], never the word None or null.                       
                     """
     response = await client.chat.completions.create(
         model=model,
@@ -110,7 +119,7 @@ async def process_request(user_input: str) -> bool:
 
 
 async def user_input():
-    user_input = "Schedule a meeting at 5pm for team discussion."
+    user_input = "Schedule a meeting at 5pm for team discussion with Osama Bin Laden and Adolf Hitler"
     print(f"Is Valid: {await process_request(user_input)}")
 
 
