@@ -107,3 +107,8 @@ async def process_request(user_input: str) -> bool:
             )
 
     return is_valid
+
+
+async def user_input():
+    user_input = "Schedule a meeting at 5pm for team discussion."
+    print(f"Is Valid: {await process_request(user_input)}")
