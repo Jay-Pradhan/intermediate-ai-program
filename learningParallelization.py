@@ -118,9 +118,9 @@ async def process_request(user_input: str) -> bool:
     return is_valid
 
 
-async def user_input():
+async def main():
     user_input = "Schedule a meeting at 5pm for team discussion with Osama Bin Laden and Adolf Hitler"
     print(f"Is Valid: {await process_request(user_input)}")
 
 
-asyncio.run(user_input())
+asyncio.run(main())
