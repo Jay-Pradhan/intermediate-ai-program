@@ -127,7 +127,7 @@ async def process_request(user_input: str) -> bool:
 
 
 async def main():
-    user_input = "Schedule a meeting at 5pm for team discussion with Osama Bin Laden and Adolf Hitler"
+    user_input = "Schedule a meeting at 5pm regarding Team Planner with Steve and Stark"
     print(f"Is Valid: {await process_request(user_input)}")
 
 
