@@ -61,6 +61,10 @@ async def validate_request(user_input: str) -> Validator:
     raw_json = response.choices[0].message.content
     result = Validator.model_validate_json(raw_json)
 
+    logging.info(
+        f"Validation Successful! is_request: {result.is_request}, confidence_score: {result.confidence_score}"
+    )
+
     return result
 
 
@@ -88,6 +92,10 @@ async def security_check(user_input: str) -> SecurityVerifier:
     )
     raw_json = response.choices[0].message.content
     result = SecurityVerifier.model_validate_json(raw_json)
+
+    logging.info(
+        f"Verification Successful! is_safe: {result.is_safe}, risk_flags: {result.risk_flags}"
+    )
 
     return result
 
