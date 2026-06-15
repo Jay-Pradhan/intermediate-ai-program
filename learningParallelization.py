@@ -25,3 +25,8 @@ class Validator(BaseModel):
     confidence_score: float = Field(
         description="A confidence score for the request between 0 and 1"
     )
+
+
+class SecurityVerifier(BaseModel):
+    is_safe: bool = Field(description="Whether the request is safe or not")
+    risk_flags: list[str] = Field(description="List of potential security conflicts")
