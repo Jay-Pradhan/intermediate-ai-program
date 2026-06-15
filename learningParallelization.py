@@ -18,3 +18,10 @@ logging.basicConfig(
 )
 
 logging.getLogger(__name__)
+
+
+class Validator(BaseModel):
+    is_request: bool = Field(description="Whether this a calendar request or not")
+    confidence_score: float = Field(
+        description="A confidence score for the request between 0 and 1"
+    )
