@@ -40,8 +40,8 @@ async def validate_request(user_input: str) -> Validator:
 
                     Respond only in this JSON format:
                     {
-                    is_request: Whether this a calendar request or not,
-                    confidence_score: A confidence score for the request between 0 and 1
+                    "is_request": "Whether this a calendar request or not",
+                    "confidence_score: "A confidence score for the request between 0 and 1"
                     }
                     """
     response = await client.chat.completions.create(
