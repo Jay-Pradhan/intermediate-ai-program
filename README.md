@@ -4,7 +4,6 @@ This is the second and the last part of my _AI learning process_. This contains 
 
 > All the workflow patterns are based on a Calendar Assistant Example.<br>
 > Almost all the files contain logging library for better understanding and processing.<br>
-> Asyncio library is used for Parallelization in learningParallelization.py
 
 # FILES
 
