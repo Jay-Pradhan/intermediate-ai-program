@@ -1,15 +1,14 @@
 # AI CALENDER AGENT
 
+import logging
 import os
-from dotenv import load_dotenv
-
-from groq import Groq
-from pydantic import BaseModel, Field
+import time
 from datetime import datetime
 from typing import Optional
-import logging
-import time
 
+from dotenv import load_dotenv
+from groq import Groq
+from pydantic import BaseModel, Field
 
 load_dotenv()
 

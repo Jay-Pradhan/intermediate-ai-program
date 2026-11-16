@@ -1,11 +1,11 @@
-import os
-from dotenv import load_dotenv
-
 import asyncio
+import logging
+import os
+from typing import Optional
+
+from dotenv import load_dotenv
 from groq import AsyncGroq
 from pydantic import BaseModel, Field
-import logging
-from typing import Optional
 
 load_dotenv()
 

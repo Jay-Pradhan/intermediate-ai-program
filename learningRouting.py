@@ -1,11 +1,11 @@
-import os
-from dotenv import load_dotenv
-
-from pydantic import BaseModel, Field
-from groq import Groq
-from typing import Optional, Literal
 import logging
+import os
 from datetime import date
+from typing import Literal, Optional
+
+from dotenv import load_dotenv
+from groq import Groq
+from pydantic import BaseModel, Field
 
 load_dotenv()
 
